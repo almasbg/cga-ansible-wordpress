@@ -1,0 +1,11 @@
+ubuntu: bionic
+
+
+wp_version: 5.4.4
+wp_db_name: wordpress
+wp_db_user: admin
+wp_db_password: secret
+
+
+nginx_port: 80
+server_hostname: server.example.com

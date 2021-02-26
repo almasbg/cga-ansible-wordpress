@@ -1,0 +1,65 @@
+---
+
+- name: test command
+  shell: cat /etc/os-release
+
+- name: set hostname
+  hostname: name="{{ hostname }}"
+
+- name: configure /etc/hosts file
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+
+- name: add multiverse repo
+  apt_repository: repo='deb http://us.archive.ubuntu.com/ubuntu/ {{ ubuntu }} multiverse' state=present mode=0644
+
+- name: add updates repo
+  apt_repository: repo='deb http://us.archive.ubuntu.com/ubuntu/ {{ ubuntu }}-updates multiverse' state=present
+
+- name: apt update
+  apt: update_cache=yes
+
+- name: apt upgrade
+  apt: upgrade=yes
+
+- name: install base packages
+  apt:
+    state: present
+    name:
+      - git
+      - python3-pip
+      - bc
+      - unzip
+      - clamav
+      - nfs-common
+  tags: packages
+
+- name: create users
+  user:
+    state: present
+    groups: sudo, adm
+    shell: /bin/bash
+    comment: sudo, adm
+    name: "{{ item }}"
+  with_items:
+   - almas
+   - dinar
+  tags:
+   - users
+  
+- name: add auth key to users
+  authorized_key:
+   state: present
+   key: "{{ lookup('file', 'authorized_keys_' + item ) }}"
+   user: "{{ item }}"
+  with_items:
+   - almas
+   - dinar
+  tags: users
+
+- name: modify sudo group with no password
+  lineinfile:
+   dest: /etc/sudoers
+   line: '%sudo ALL=(ALL) NOPASSWD:ALL'
+  tags: users

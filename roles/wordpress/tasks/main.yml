@@ -1,0 +1,46 @@
+---
+
+- name: download wordpress
+  get_url: url=http://wordpress.org/wordpress-{{ wp_version }}.tar.gz  dest=/var/www/html/wordpress/public_html/wordpress-{{ wp_version }}.tar.gz  mode=0755
+
+- name: extract wordpress
+  unarchive:
+    src: /var/www/html/wordpress/public_html/wordpress-{{ wp_version }}.tar.gz
+    dest: /var/www/html/wordpress/public_html/
+    remote_src: yes
+
+- name: copy all file
+  copy:
+    src: /var/www/html/wordpress/public_html/wordpress/
+    dest: /var/www/html/wordpress/public_html/
+    remote_src: yes
+
+- name: Recursively change ownership
+  file:
+    path: /var/www/html/wordpress/public_html
+    state: directory
+    recurse: yes
+    owner: www-data
+    group: www-data
+    mode: u+rwx,g+rx,o+rx
+
+- name: Fetch salts for wordpress config
+  command: curl  http://api.wordpress.org/secret-key/1.1/salt/
+  args:
+    warn: false
+  register: "wp_salt"
+
+
+- name: copy wordpress config
+  template: 
+    src: wp-config.php.j2
+    dest: /var/www/html/wordpress/public_html/
+    mode: 0755
+    owner: www-data
+    group: www-data
+
+- name: start php-fpm service
+  service: 
+    name: php7.2-fpm
+    state: started
+    enabled: yes

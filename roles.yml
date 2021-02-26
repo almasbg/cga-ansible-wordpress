@@ -1,0 +1,12 @@
+- name: main or however you want to call it
+  hosts: admin:webservers
+  roles:
+          - { role: basic, tags: basic }
+
+- name: webserver or something else
+  hosts: webservers
+  roles:
+          - { role: mysql, tags: mysql }
+          - { role: nginx, tags: nginx }
+          - { role: php-fpm, tags: php-fpm }
+          - { role: wordpress, tags: wordpress }

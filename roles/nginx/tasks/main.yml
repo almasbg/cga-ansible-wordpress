@@ -1,0 +1,28 @@
+---
+
+- name: install nginx
+  apt:
+    name: nginx
+    state: present
+  
+- name: create directory
+  file:
+    path: /var/www/html/wordpress/public_html
+    state: directory
+    mode: '0755'
+
+- name: copy nginx config for wordpress
+  template: src=default.conf dest=/etc/nginx/sites-available/wordpress.conf mode=0755
+  notify: restart-nginx
+
+- name: create symlink
+  file:
+    src: /etc/nginx/sites-available/wordpress.conf
+    dest: /etc/nginx/sites-enabled/wordpress.conf
+    state: link
+  notify: restart-nginx
+
+- name: rm default symlink 
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
